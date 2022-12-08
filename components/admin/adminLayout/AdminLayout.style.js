@@ -7,6 +7,7 @@ const { Content } = Layout
 
 export const StyledLayout = styled(Layout)`
   min-height: 100vh;
+  background-color: rgb(240, 242, 245);
 `
 
 export const StyledContent = styled(Content)`
