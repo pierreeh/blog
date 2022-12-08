@@ -8,11 +8,11 @@ const prisma = new PrismaClient()
 export default async function post(req, res) {
   const session = await getSession({ req })
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' })
-  }
-
   try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ message: 'Method not allowed' })
+    }
+
     const { name, slug, description, published } = req.body
 
     if (!name || !name.replace(/\s/g, '').length || !slug || !slug.replace(/\s/g, '').length) {

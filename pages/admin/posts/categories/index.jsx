@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { PrismaClient } from "@prisma/client"
 import dayjs from 'dayjs'
-import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination } from 'antd'
+import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal } from 'antd'
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
@@ -24,6 +24,7 @@ export default function PostsCategories({ categories }) {
   const [searchValue, setSearchValue] = useState('')
   const [datas, setDatas] = useState(categories)
   const nameValue = Form.useWatch('name', form)
+  const { confirm } = Modal
 
   useEffect(() => {
     setDatas(categories.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
@@ -69,6 +70,23 @@ export default function PostsCategories({ categories }) {
     }
   }
 
+  async function deleteCategory(id, name) {
+    try {
+      confirm({
+        title: `Delete ${name}?`,
+        icon: <ExclamationCircleOutlined />,
+        async onOk() {
+          const res = await(await fetch(`/api/admin/posts/categories/hide/${id}`, { method: 'PATCH' })).json()
+          router.reload()
+          return res
+        },
+        onCancel() {}
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <Row gutter={24}>
       <Col span={16}>
@@ -96,7 +114,7 @@ export default function PostsCategories({ categories }) {
                 i >= pages.minIndex && i < pages.maxIndex &&
                 <List.Item
                   actions={[
-                    <Button key={cat.id} onClick={() => deleteClub(cat.id, cat.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
+                    <Button key={cat.id} onClick={() => deleteCategory(cat.id, cat.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
                   ]}
                 >
                   <List.Item.Meta
