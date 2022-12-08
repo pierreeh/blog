@@ -1,3 +1,10 @@
+import { createGlobalStyle } from 'styled-components'
+
+export function rem(pixel) {
+	return `${pixel / 16}rem`
+}
+
+export const GlobalStyles = createGlobalStyle`
 /***
     The new CSS reset - version 1.7.3 (last updated 7.8.2022)
     GitHub page: https://github.com/elad2412/the-new-css-reset
@@ -89,3 +96,4 @@ meter {
 body {
   font-family: 'Mulish', sans-serif;
 }
+`

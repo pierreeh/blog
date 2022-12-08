@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  compiler: {
+    styledComponents: true,
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     domains: ['lh3.googleusercontent.com'],
