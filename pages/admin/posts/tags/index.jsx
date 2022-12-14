@@ -41,6 +41,12 @@ export default function PostsTags({ tags }) {
 
   async function onSubmit(data) {
     try {
+      const duplicate = tags.find(t => t.name === data.name)
+      if (duplicate) {
+        setError({ type: 'error', message: 'This tag already exists' })
+        return false
+      }
+
       const body = JSON.stringify({
         name: data.name,
         slug: slugify(data.slug),

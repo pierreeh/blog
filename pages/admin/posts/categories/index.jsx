@@ -42,6 +42,12 @@ export default function PostsCategories({ categories }) {
 
   async function onSubmit(data) {
     try {
+      const duplicate = categories.find(c => c.name === data.name)
+      if (duplicate) {
+        setError({ type: 'error', message: 'This category already exists' })
+        return false
+      }
+
       const body = JSON.stringify({
         name: data.name,
         slug: slugify(data.slug),
@@ -95,7 +101,7 @@ export default function PostsCategories({ categories }) {
             <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
             <Breadcrumb.Item>Categories</Breadcrumb.Item>
           </Breadcrumb>
-          
+
           <Typography.Title level={5}>{datas.length} Categor{datas.length > 1 ? 'ies' : 'y'}</Typography.Title>
 
           <List 

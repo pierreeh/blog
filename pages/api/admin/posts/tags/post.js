@@ -18,6 +18,12 @@ export default async function(req, res) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
 
+    const tags = await prisma.postTag.findMany()
+    const duplicate = tags.find(t => t.name === name)
+    if (duplicate) {
+      return res.status(400).json({ message: 'This tag already exists' })
+    }
+
     const postTags = await prisma.postTag.create({
       data: {
         name,

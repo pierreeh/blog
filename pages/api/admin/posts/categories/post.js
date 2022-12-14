@@ -18,6 +18,12 @@ export default async function post(req, res) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
     
+    const categories = await prisma.postCategory.findMany()
+    const duplicate = categories.find(c => c.name === name)
+    if (duplicate) {
+      return res.status(400).json({ message: 'This category already exists' })
+    }
+
     const postCategory = await prisma.postCategory.create({
       data: {
         name,
