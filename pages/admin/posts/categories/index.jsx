@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { PrismaClient } from "@prisma/client"
 import dayjs from 'dayjs'
-import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal } from 'antd'
+import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb } from 'antd'
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
@@ -90,6 +90,11 @@ export default function PostsCategories({ categories }) {
   return (
     <Row gutter={24}>
       <Col span={16}>
+      <Breadcrumb style={{ marginBottom: '1rem' }}>
+          <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
+          <Breadcrumb.Item>Categories</Breadcrumb.Item>
+        </Breadcrumb>
+
         <PageSection>
           <Typography.Title level={5}>{datas.length} Categor{datas.length > 1 ? 'ies' : 'y'}</Typography.Title>
 

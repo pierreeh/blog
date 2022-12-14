@@ -38,7 +38,6 @@ export default function AdminHeader() {
                   sizes="100%"
                   margins={`0 ${rem(16)} 0 0`}
                 />
-                {session.user.name}
               </Button>
           </StyledDropdown>
         </DropdownWrapper>
