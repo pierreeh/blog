@@ -1,37 +1,30 @@
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { PrismaClient } from "@prisma/client"
+import Link from 'next/link'
 import dayjs from 'dayjs'
+import { PrismaClient } from "@prisma/client"
 import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb } from 'antd'
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
 import PageSection from "components/admin/commons/pageSection/PageSection"
-import slugify from 'utils/slugify'
 import { rem } from 'styles/ClobalStyles.style'
+import slugify from 'utils/slugify'
 import { jsonify } from 'utils/utils'
 
 const prisma = new PrismaClient()
 const pageSize = 24
 
-export default function PostsCategories({ categories }) {
+export default function PostsTags({ tags }) {
   const router = useRouter()
   const [form] = Form.useForm()
   const [published, setPublished] = useState(true)
   const [error, setError] = useState({ type: '', message: '' })
   const [pages, setPages] = useState({ current: 1, minIndex: 0, maxIndex: pageSize })
   const [searchValue, setSearchValue] = useState('')
-  const [datas, setDatas] = useState(categories)
+  const [datas, setDatas] = useState(tags)
   const nameValue = Form.useWatch('name', form)
-  const { confirm } = Modal
 
-  useEffect(() => {
-    setDatas(categories.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
-
-    return () => setDatas(categories)
-  }, [searchValue, categories])
-  
   useEffect(() => {
     if (nameValue) {
       form.setFieldsValue({ slug: slugify(nameValue) })
@@ -40,16 +33,21 @@ export default function PostsCategories({ categories }) {
     return () => form.setFieldsValue({ slug: '' })
   }, [nameValue, form])
 
+  useEffect(() => {
+    setDatas(tags.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
+
+    return () => setDatas(tags)
+  }, [searchValue, tags])
+
   async function onSubmit(data) {
     try {
       const body = JSON.stringify({
         name: data.name,
         slug: slugify(data.slug),
-        description: data.description,
         published
       })
 
-      const res = await(await fetch('/api/admin/posts/categories/post', {
+      const res = await(await fetch(`/api/admin/posts/tags/post`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -58,30 +56,13 @@ export default function PostsCategories({ categories }) {
         body
       })).json()
 
-      if (res.message) { 
+      if (res.message) {
         setError({ type: 'error', message: res.message })
         return false
       }
-      
+
       router.reload()
       return res
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  async function deleteCategory(id, name) {
-    try {
-      confirm({
-        title: `Delete ${name}?`,
-        icon: <ExclamationCircleOutlined />,
-        async onOk() {
-          const res = await(await fetch(`/api/admin/posts/categories/hide/${id}`, { method: 'PATCH' })).json()
-          router.reload()
-          return res
-        },
-        onCancel() {}
-      })
     } catch (e) {
       console.error(e)
     }
@@ -93,13 +74,12 @@ export default function PostsCategories({ categories }) {
         <PageSection>
           <Breadcrumb style={{ marginBottom: '1rem' }}>
             <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
-            <Breadcrumb.Item>Categories</Breadcrumb.Item>
+            <Breadcrumb.Item>Tags</Breadcrumb.Item>
           </Breadcrumb>
-          
-          <Typography.Title level={5}>{datas.length} Categor{datas.length > 1 ? 'ies' : 'y'}</Typography.Title>
+          <Typography.Title level={5}>{datas.length} Tag{datas.length > 1 ? 's' : ''}</Typography.Title>
 
           <List 
-            header={datas.length > pageSize && <Input placeholder="Find a category" allowClear onChange={e => setSearchValue(e.target.value)} />}
+            header={datas.length > pageSize && <Input placeholder="Find a tag" allowClear onChange={e => setSearchValue(e.target.value)} />}
             footer={
               datas.length > pageSize && 
               <Row justify='center'>
@@ -114,26 +94,25 @@ export default function PostsCategories({ categories }) {
             }
             bordered
             dataSource={datas}
-            renderItem={(cat, i) => {
+            renderItem={(tag, i) => {
               return (
                 i >= pages.minIndex && i < pages.maxIndex &&
                 <List.Item
                   actions={[
-                    <Button key={cat.id} onClick={() => deleteCategory(cat.id, cat.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
+                    <Button key={tag.id} onClick={() => deleteCategory(tag.id, tag.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
                   ]}
                 >
                   <List.Item.Meta
-                    title={<Link href={`/admin/posts/categories/${cat.id}`}>{cat.name}</Link>}
+                    title={<Link href={`/admin/posts/tags/${tag.id}`}>{tag.name}</Link>}
                     description={
                       <>
-                        {!!cat.description && <Typography.Text type='secondary' style={{ display: 'block' }}>{cat.description.slice(0, 50)} {cat.description.length > 50 ? '...' : ''}</Typography.Text>}
                         <Typography.Text type='secondary'>
-                          {!!cat.published 
+                          {!!tag.published 
                             ? <EyeOutlined style={{ marginRight: '.5rem' }} /> 
                             : <EyeInvisibleOutlined style={{ marginRight: '.5rem' }} />} 
-                            {`${cat.updated_at > cat.created_at 
-                            ? `Updated ${dayjs(cat.updated_at).format('ddd MMMM YYYY[,] hh[:] mm a')}` 
-                            : `Created ${dayjs(cat.created_at).format('ddd MMMM YYYY[,] hh[:] mm a')}`} by ${cat.user.name}`
+                            {`${tag.updated_at > tag.created_at 
+                            ? `Updated ${dayjs(tag.updated_at).format('ddd MMMM YYYY[,] hh[:] mm a')}` 
+                            : `Created ${dayjs(tag.created_at).format('ddd MMMM YYYY[,] hh[:] mm a')}`} by ${tag.user.name}`
                           }
                         </Typography.Text>
                       </>
@@ -148,7 +127,7 @@ export default function PostsCategories({ categories }) {
 
       <Col span={8}>
         <PageSection isSticky>
-          <Typography.Title level={5}>New Category</Typography.Title>
+          <Typography.Title level={5}>New Tag</Typography.Title>
 
           {error.type && 
             <Alert 
@@ -204,12 +183,7 @@ export default function PostsCategories({ categories }) {
             >
               <Input  />
             </Form.Item>
-            <Form.Item
-              label="Description"
-              name='description'
-            >
-              <Input.TextArea />
-            </Form.Item>
+
             <Row style={{ marginTop: rem(20), marginBottom: rem(20) }}>
               <Col span={3}>
                 <Switch defaultChecked onChange={e => setPublished(e)} />
@@ -233,11 +207,11 @@ export default function PostsCategories({ categories }) {
   )
 }
 
-PostsCategories.getLayout = page => <AdminLayout>{page}</AdminLayout>
+PostsTags.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps() {
   try {
-    const postsCategories = await prisma.postCategory.findMany({
+    const tags = await prisma.postTag.findMany({
       where: { visible: true },
       orderBy: { created_at: 'desc' },
       include: {
@@ -251,7 +225,7 @@ export async function getServerSideProps() {
 
     return {
       props: {
-        categories: jsonify(postsCategories)
+        tags: jsonify(tags)
       }
     }
   } catch (e) {

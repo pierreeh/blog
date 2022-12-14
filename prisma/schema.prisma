@@ -47,6 +47,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   PostCategory  PostCategory[]
+  PostTag       PostTag[]
 }
 
 model VerificationToken {
@@ -68,6 +69,19 @@ model PostCategory {
   user_id     String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model PostTag {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  slug       String   @unique
+  published  Boolean  @default(true) @db.Boolean
+  visible    Boolean  @default(true) @db.Boolean
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   user User @relation(fields: [user_id], references: [id])
 }
