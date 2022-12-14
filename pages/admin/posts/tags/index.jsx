@@ -24,6 +24,7 @@ export default function PostsTags({ tags }) {
   const [searchValue, setSearchValue] = useState('')
   const [datas, setDatas] = useState(tags)
   const nameValue = Form.useWatch('name', form)
+  const { confirm } = Modal
 
   useEffect(() => {
     if (nameValue) {
@@ -74,6 +75,23 @@ export default function PostsTags({ tags }) {
     }
   }
 
+  async function deleteTag(id, name) {
+    try {
+      confirm({
+        title: `Delete ${name}?`,
+        icon: <ExclamationCircleOutlined />,
+        async onOk() {
+          const res = await(await fetch(`/api/admin/posts/tags/hide/${id}`, { method: 'PATCH' })).json()
+          router.reload()
+          return res
+        },
+        onCancel() {}
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <Row gutter={24}>
       <Col span={16}>
@@ -105,7 +123,7 @@ export default function PostsTags({ tags }) {
                 i >= pages.minIndex && i < pages.maxIndex &&
                 <List.Item
                   actions={[
-                    <Button key={tag.id} onClick={() => deleteCategory(tag.id, tag.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
+                    <Button key={tag.id} onClick={() => deleteTag(tag.id, tag.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
                   ]}
                 >
                   <List.Item.Meta
