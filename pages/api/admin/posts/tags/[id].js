@@ -10,31 +10,30 @@ export default async function patch(req, res) {
     const session = await getSession({ req })
 
     if (req.method !== 'PATCH') {
-      return res.status(405).json({ message: 'Method not allowed'})
+      return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    const { name, description, published } = req.body
+    const { name, published } = req.body
     if (!name || !name.replace(/\s/g, '').length) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
 
-    const categories = await prisma.postCategory.findMany({ select: { name: true } })
-    const duplicate = categories.find(c => c.name === name)
+    const tags = await prisma.postTag.findMany({ select: { name: true } })
+    const duplicate = tags.find(t => t.name === name)
     if (duplicate) {
-      return res.status(400).json({ message: 'This category already exists' })
+      return res.status(400).json({ message: 'This tag already exists' })
     }
 
-    const patchCategory = await prisma.postCategory.update({
+    const patchTag = await prisma.postTag.update({
       where: { id: req.query.id },
       data: {
         name,
-        description,
         published,
-        user_id: session.user.id,
-        updated_at: dateFormated
+        updated_at: dateFormated,
+        user_id: session.user.id
       }
     })
-    res.status(200).json(patchCategory)
+    res.status(200).json(patchTag)
   } catch (e) {
     return res.status(500).json({ message: new Error(e).message })
   }

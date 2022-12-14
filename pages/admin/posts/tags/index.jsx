@@ -219,7 +219,6 @@ export default function PostsTags({ tags }) {
 
             <Button
               type="primary"
-              block
               htmlType="submit"
             >
               Publish

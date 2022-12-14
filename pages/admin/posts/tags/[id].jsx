@@ -11,27 +11,26 @@ import { rem } from "styles/ClobalStyles.style"
 
 const prisma = new PrismaClient()
 
-export default function EditCategory({ category, categories }) {
+export default function EditTag({ tag, tags }) {
   const router = useRouter()
   const [form] = Form.useForm()
-  const [published, setPublished] = useState(category.published)
+  const [published, setPublished] = useState(tag.published)
   const [error, setError] = useState({ type: '', message: '' })
-
+  
   async function onSubmit(data) {
     try {
-      const duplicate = categories.find(c => c.name === data.name)
+      const duplicate = tags.find(t => t.name === data.name)
       if (duplicate) {
-        setError({ type: 'error', message: 'This category already exists' })
+        setError({ type: 'error', message: 'This tag already exists' })
         return false
       }
 
       const body = JSON.stringify({
         name: data.name,
-        description: data.description,
         published
       })
 
-      const res = await(await fetch(`/api/admin/posts/categories/${router.query.id}`, {
+      const res = await(await fetch(`/api/admin/posts/tags/${router.query.id}`, {
         method: 'PATCH',
         headers: {
           'Accept': 'application/json',
@@ -40,12 +39,12 @@ export default function EditCategory({ category, categories }) {
         body
       })).json()
 
-      if (res.message) { 
+      if (res.message) {
         setError({ type: 'error', message: res.message })
         return false
       }
-      
-      router.push('/admin/posts/categories')
+
+      router.push('/admin/posts/tags')
       return res
     } catch (e) {
       console.error(e)
@@ -58,12 +57,12 @@ export default function EditCategory({ category, categories }) {
         <PageSection>
           <Breadcrumb style={{ marginBottom: '1rem' }}>
             <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
-            <Breadcrumb.Item><Link href="/admin/posts/categories">Categories</Link></Breadcrumb.Item>
-            <Breadcrumb.Item>{category.name}</Breadcrumb.Item>
+            <Breadcrumb.Item><Link href="/admin/posts/tags">Tags</Link></Breadcrumb.Item>
+            <Breadcrumb.Item>{tag.name}</Breadcrumb.Item>
           </Breadcrumb>
 
           <Col span={12} offset={6}>
-            <Typography.Title level={5}>Edit {category.name}</Typography.Title>
+            <Typography.Title level={5}>Edit {tag.name}</Typography.Title>
 
             {error.type && 
               <Alert 
@@ -79,17 +78,16 @@ export default function EditCategory({ category, categories }) {
               />
             }
 
-            <Form
+            <Form 
               autoComplete='off'
-              name='editCategory'
+              name='createCategory'
               layout='vertical'
               onFinish={onSubmit}
               form={form}
               initialValues={{
-                name: category.name,
-                slug: category.slug,
-                description: category.description,
-                published: category.published
+                name: tag.name,
+                slug: tag.slug,
+                published: tag.published
               }}
             >
               <Form.Item
@@ -114,12 +112,7 @@ export default function EditCategory({ category, categories }) {
               >
                 <Input disabled />
               </Form.Item>
-              <Form.Item
-                label="Description"
-                name='description'
-              >
-                <Input.TextArea />
-              </Form.Item>
+
               <Row style={{ marginTop: rem(20), marginBottom: rem(20) }}>
                 <Col span={2}>
                   <Form.Item valuePropName="checked" name="published" noStyle>
@@ -135,7 +128,7 @@ export default function EditCategory({ category, categories }) {
                 type="primary"
                 htmlType="submit"
               >
-                Save
+                Publish
               </Button>
             </Form>
           </Col>
@@ -145,17 +138,21 @@ export default function EditCategory({ category, categories }) {
   )
 }
 
-EditCategory.getLayout = page => <AdminLayout>{page}</AdminLayout>
+EditTag.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps(context) {
   try {
-    const postCategory = await prisma.postCategory.findFirst({ where: { id: context.query.id } })
-    const categories = await prisma.postCategory.findMany({ select: { name: true } })
+    const postTag = await prisma.postTag.findFirst({ where: { id: context.query.id } })
+    const tags = await prisma.postTag.findMany({
+      select: {
+        name: true
+      }
+    })
 
     return {
       props: {
-        category: jsonify(postCategory),
-        categories: jsonify(categories)
+        tag: jsonify(postTag),
+        tags: jsonify(tags)
       }
     }
   } catch (e) {

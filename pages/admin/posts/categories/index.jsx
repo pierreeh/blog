@@ -227,7 +227,6 @@ export default function PostsCategories({ categories }) {
 
             <Button
               type="primary"
-              block
               htmlType="submit"
             >
               Publish
