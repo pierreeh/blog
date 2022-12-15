@@ -18,7 +18,7 @@ export default async function patch(req, res) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
 
-    const patchCategory = await prisma.postCategory.update({
+    const patchCategory = await prisma.category.update({
       where: { id: req.query.id },
       data: {
         name,

@@ -38,16 +38,16 @@ model Session {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?        @unique
-  role          Int            @default(0) @db.SmallInt
+  email         String?       @unique
+  role          Int           @default(0) @db.SmallInt
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
-  PostCategory  PostCategory[]
-  PostTag       PostTag[]
+  categories    Category[]
+  subCategories SubCategory[]
   Post          Post[]
 }
 
@@ -59,7 +59,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model PostCategory {
+model Category {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
@@ -72,12 +72,12 @@ model PostCategory {
   updated_at  DateTime @updatedAt
   color       String
 
-  user    User      @relation(fields: [user_id], references: [id])
-  Post    Post[]
-  PostTag PostTag[]
+  user          User          @relation(fields: [user_id], references: [id])
+  post          Post[]
+  subCategories SubCategory[]
 }
 
-model PostTag {
+model SubCategory {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
@@ -88,9 +88,9 @@ model PostTag {
   updated_at  DateTime @updatedAt
   category_id String
 
-  user     User         @relation(fields: [user_id], references: [id])
-  category PostCategory @relation(fields: [category_id], references: [id])
-  TagsPost TagsPost[]
+  user          User              @relation(fields: [user_id], references: [id])
+  category      Category          @relation(fields: [category_id], references: [id])
+  subCategories PostSubCategory[]
 }
 
 model Post {
@@ -109,16 +109,16 @@ model Post {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  user     User         @relation(fields: [user_id], references: [id])
-  category PostCategory @relation(fields: [category_id], references: [id])
-  TagsPost TagsPost[]
+  user          User              @relation(fields: [user_id], references: [id])
+  category      Category          @relation(fields: [category_id], references: [id])
+  subCategories PostSubCategory[]
 }
 
-model TagsPost {
+model PostSubCategory {
   id      String @id @default(cuid())
   post_id String
   tag_id  String
 
-  post Post    @relation(fields: [post_id], references: [id])
-  tag  PostTag @relation(fields: [tag_id], references: [id])
+  post        Post        @relation(fields: [post_id], references: [id])
+  subCategory SubCategory @relation(fields: [tag_id], references: [id])
 }

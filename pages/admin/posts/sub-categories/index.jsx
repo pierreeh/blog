@@ -15,14 +15,14 @@ import { jsonify } from 'utils/utils'
 const prisma = new PrismaClient()
 const pageSize = 24
 
-export default function PostsTags({ tags, categories }) {
+export default function PostsSubCategories({ subCategories, categories }) {
   const router = useRouter()
   const [form] = Form.useForm()
   const [published, setPublished] = useState(true)
   const [error, setError] = useState({ type: '', message: '' })
   const [pages, setPages] = useState({ current: 1, minIndex: 0, maxIndex: pageSize })
   const [searchValue, setSearchValue] = useState('')
-  const [datas, setDatas] = useState(tags)
+  const [datas, setDatas] = useState(subCategories)
   const nameValue = Form.useWatch('name', form)
   const { confirm } = Modal
   
@@ -35,16 +35,16 @@ export default function PostsTags({ tags, categories }) {
   }, [nameValue, form])
 
   useEffect(() => {
-    setDatas(tags.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
+    setDatas(subCategories.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
 
-    return () => setDatas(tags)
-  }, [searchValue, tags])
+    return () => setDatas(subCategories)
+  }, [searchValue, subCategories])
 
   async function onSubmit(data) {
     try {
-      const duplicate = tags.find(t => t.name === data.name)
+      const duplicate = subCategories.find(t => t.name === data.name)
       if (duplicate) {
-        setError({ type: 'error', message: 'This tag already exists' })
+        setError({ type: 'error', message: 'This sub category already exists' })
         return false
       }
 
@@ -55,7 +55,7 @@ export default function PostsTags({ tags, categories }) {
         published
       })
 
-      const res = await(await fetch(`/api/admin/posts/tags/post`, {
+      const res = await(await fetch(`/api/admin/posts/subcategories/post`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -76,13 +76,13 @@ export default function PostsTags({ tags, categories }) {
     }
   }
 
-  async function deleteTag(id, name) {
+  async function deleteSubCat(id, name) {
     try {
       confirm({
         title: `Delete ${name}?`,
         icon: <ExclamationCircleOutlined />,
         async onOk() {
-          const res = await(await fetch(`/api/admin/posts/tags/hide/${id}`, { method: 'PATCH' })).json()
+          const res = await(await fetch(`/api/admin/posts/subcategories/hide/${id}`, { method: 'PATCH' })).json()
           router.reload()
           return res
         },
@@ -97,16 +97,16 @@ export default function PostsTags({ tags, categories }) {
     <>
       <Breadcrumb style={{ marginBottom: '1rem' }}>
         <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
-        <Breadcrumb.Item>Tags</Breadcrumb.Item>
+        <Breadcrumb.Item>Sub Categories</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row gutter={24}>
         <Col span={16}>
           <PageSection>
-            <Typography.Title level={5}>{datas.length} Tag{datas.length > 1 ? 's' : ''}</Typography.Title>
+            <Typography.Title level={5}>{datas.length} Sub Categor{datas.length > 1 ? 'ies' : 'y'}</Typography.Title>
 
             <List 
-              header={datas.length > pageSize && <Input placeholder="Find a tag" allowClear onChange={e => setSearchValue(e.target.value)} />}
+              header={datas.length > pageSize && <Input placeholder="Find a sub category" allowClear onChange={e => setSearchValue(e.target.value)} />}
               footer={
                 datas.length > pageSize && 
                 <Row justify='center'>
@@ -121,24 +121,24 @@ export default function PostsTags({ tags, categories }) {
               }
               bordered
               dataSource={datas}
-              renderItem={(tag, i) => {
+              renderItem={(subCat, i) => {
                 return (
                   i >= pages.minIndex && i < pages.maxIndex &&
                   <List.Item
                     actions={[
-                      <Button key={tag.id} onClick={() => deleteTag(tag.id, tag.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
+                      <Button key={subCat.id} onClick={() => deleteSubCat(subCat.id, subCat.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
                     ]}
                   >
                     <List.Item.Meta
-                      title={<><Badge color={tag.category.color} /> <Link href={`/admin/posts/tags/${tag.id}`}>{tag.name}</Link></>}
+                      title={<><Badge color={subCat.category.color} /> <Link href={`/admin/posts/sub-categories/${subCat.id}`}>{subCat.name}</Link></>}
                       description={
                         <Typography.Text type='secondary'>
-                          {!!tag.published 
+                          {!!subCat.published 
                             ? <EyeOutlined style={{ marginRight: '.5rem' }} /> 
                             : <EyeInvisibleOutlined style={{ marginRight: '.5rem' }} />} 
-                            {`${tag.updated_at > tag.created_at 
-                            ? `Updated ${dayjs(tag.updated_at).format('ddd MMMM YYYY[,] hh[:] mm a')}` 
-                            : `Created ${dayjs(tag.created_at).format('ddd MMMM YYYY[,] hh[:] mm a')}`} by ${tag.user.name}`
+                            {`${subCat.updated_at > subCat.created_at 
+                            ? `Updated ${dayjs(subCat.updated_at).format('ddd MMMM YYYY[,] hh[:] mm a')}` 
+                            : `Created ${dayjs(subCat.created_at).format('ddd MMMM YYYY[,] hh[:] mm a')}`} by ${subCat.user.name}`
                           }
                         </Typography.Text>
                       }
@@ -152,7 +152,7 @@ export default function PostsTags({ tags, categories }) {
 
         <Col span={8}>
           <PageSection isSticky>
-            <Typography.Title level={5}>New Tag</Typography.Title>
+            <Typography.Title level={5}>New Sub Category</Typography.Title>
 
             {error.type && 
               <Alert 
@@ -170,7 +170,7 @@ export default function PostsTags({ tags, categories }) {
 
             <Form 
               autoComplete='off'
-              name='createTag'
+              name='createSubCategories'
               layout='vertical'
               onFinish={onSubmit}
               form={form}
@@ -210,7 +210,7 @@ export default function PostsTags({ tags, categories }) {
               </Form.Item>
               
               <Form.Item 
-                label="Category"
+                label="Parent"
                 name="categoryId"
                 rules={[
                   {
@@ -221,7 +221,7 @@ export default function PostsTags({ tags, categories }) {
               >
                 <Select placeholder='Select'>
                   {categories.map(c => (
-                    <Select.Option key={c.id} value={c.id}>{c.name}</Select.Option>
+                    <Select.Option key={c.id} value={c.id}><Badge color={c.color} /> {c.name}</Select.Option>
                   ))}
                 </Select>
               </Form.Item>
@@ -249,11 +249,11 @@ export default function PostsTags({ tags, categories }) {
   )
 }
 
-PostsTags.getLayout = page => <AdminLayout>{page}</AdminLayout>
+PostsSubCategories.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps() {
   try {
-    const tags = await prisma.postTag.findMany({
+    const subCategories = await prisma.subCategory.findMany({
       where: { visible: true },
       orderBy: { created_at: 'desc' },
       include: {
@@ -271,17 +271,18 @@ export async function getServerSideProps() {
       }
     })
 
-    const categories = await prisma.postCategory.findMany({
+    const categories = await prisma.category.findMany({
       where: { visible: true, published: true },
       select: {
         id: true,
-        name: true
+        name: true,
+        color: true
       }
     })
 
     return {
       props: {
-        tags: jsonify(tags),
+        subCategories: jsonify(subCategories),
         categories: jsonify(categories)
       }
     }

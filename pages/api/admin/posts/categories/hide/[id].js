@@ -13,8 +13,8 @@ export default async function patch(req, res) {
       return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    const category = await prisma.postCategory.findFirst({ where: { id: req.query.id } })
-    const hideCategory = await prisma.postCategory.update({
+    const category = await prisma.category.findFirst({ where: { id: req.query.id } })
+    const hideCategory = await prisma.category.update({
       where: { id: req.query.id },
       data: {
         visible: !category.visible,

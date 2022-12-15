@@ -10,25 +10,20 @@ export default async function patch(req, res) {
     const session = await getSession({ req })
 
     if (req.method !== 'PATCH') {
-      return res.status(405).json({ message: 'Method not allowed' })
+      return res.status(405).josn({ message: 'Method not allowed' })
     }
 
-    const { name, published, categoryId } = req.body
-    if (!name || !name.replace(/\s/g, '').length || !categoryId) {
-      return res.status(400).json({ message: 'Invalid fields' })
-    }
-
-    const patchTag = await prisma.postTag.update({
+    const tag = await prisma.subCategory.findFirst({ where: { id: req.query.id } })
+    const hideSubCategory = await prisma.subCategory.update({
       where: { id: req.query.id },
       data: {
-        name,
-        published,
-        category_id: categoryId,
+        visible: !tag.visible,
         updated_at: dateFormated,
         user_id: session.user.id
       }
     })
-    res.status(200).json(patchTag)
+
+    res.status(200).json(hideSubCategory)
   } catch (e) {
     return res.status(500).json({ message: new Error(e).message })
   }

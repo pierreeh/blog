@@ -11,10 +11,10 @@ import { rem } from "styles/ClobalStyles.style"
 
 const prisma = new PrismaClient()
 
-export default function EditTag({ tag, categories }) {
+export default function EditSubCategory({ subCategory, categories }) {
   const router = useRouter()
   const [form] = Form.useForm()
-  const [published, setPublished] = useState(tag.published)
+  const [published, setPublished] = useState(subCategory.published)
   const [error, setError] = useState({ type: '', message: '' })
   
   async function onSubmit(data) {
@@ -25,7 +25,7 @@ export default function EditTag({ tag, categories }) {
         published
       })
 
-      const res = await(await fetch(`/api/admin/posts/tags/${router.query.id}`, {
+      const res = await(await fetch(`/api/admin/posts/subcategories/${router.query.id}`, {
         method: 'PATCH',
         headers: {
           'Accept': 'application/json',
@@ -39,7 +39,7 @@ export default function EditTag({ tag, categories }) {
         return false
       }
 
-      router.push('/admin/posts/tags')
+      router.push('/admin/posts/sub-categories')
       return res
     } catch (e) {
       console.error(e)
@@ -50,15 +50,15 @@ export default function EditTag({ tag, categories }) {
     <>
       <Breadcrumb style={{ marginBottom: '1rem' }}>
         <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
-        <Breadcrumb.Item><Link href="/admin/posts/tags">Tags</Link></Breadcrumb.Item>
-        <Breadcrumb.Item>{tag.name}</Breadcrumb.Item>
+        <Breadcrumb.Item><Link href="/admin/posts/sub-categories">Sub Categories</Link></Breadcrumb.Item>
+        <Breadcrumb.Item>{subCategory.name}</Breadcrumb.Item>
       </Breadcrumb>
       
       <Row gutter={24}>
         <Col span={24}>
           <PageSection>
             <Col span={12} offset={6}>
-              <Typography.Title level={5}>Edit {tag.name}</Typography.Title>
+              <Typography.Title level={5}>Edit {subCategory.name}</Typography.Title>
 
               {error.type && 
                 <Alert 
@@ -76,15 +76,15 @@ export default function EditTag({ tag, categories }) {
 
               <Form 
                 autoComplete='off'
-                name='editTag'
+                name='editSubCategory'
                 layout='vertical'
                 onFinish={onSubmit}
                 form={form}
                 initialValues={{
-                  name: tag.name,
-                  slug: tag.slug,
-                  published: tag.published,
-                  categoryId: tag.category_id
+                  name: subCategory.name,
+                  slug: subCategory.slug,
+                  published: subCategory.published,
+                  categoryId: subCategory.category_id
                 }}
               >
                 <Form.Item
@@ -111,7 +111,7 @@ export default function EditTag({ tag, categories }) {
                 </Form.Item>
 
                 <Form.Item 
-                  label="Category"
+                  label="Parent"
                   name="categoryId"
                   rules={[
                     {
@@ -153,16 +153,23 @@ export default function EditTag({ tag, categories }) {
   )
 }
 
-EditTag.getLayout = page => <AdminLayout>{page}</AdminLayout>
+EditSubCategory.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps(context) {
   try {
-    const tag = await prisma.postTag.findFirst({ where: { id: context.query.id } })
-    const categories = await prisma.postCategory.findMany({ where: { visible: true, published: true } })
+    const subCategory = await prisma.subCategory.findFirst({ where: { id: context.query.id } })
+    const categories = await prisma.category.findMany({ 
+      where: { visible: true, published: true },
+      select: {
+        id: true,
+        name: true,
+        color: true
+      }
+    })
 
     return {
       props: {
-        tag: jsonify(tag),
+        subCategory: jsonify(subCategory),
         categories: jsonify(categories)
       }
     }

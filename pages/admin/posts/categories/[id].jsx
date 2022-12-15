@@ -163,12 +163,12 @@ EditCategory.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps(context) {
   try {
-    const postCategory = await prisma.postCategory.findFirst({ where: { id: context.query.id } })
-    const categories = await prisma.postCategory.findMany({ select: { name: true } })
+    const category = await prisma.category.findFirst({ where: { id: context.query.id } })
+    const categories = await prisma.category.findMany({ select: { name: true } })
 
     return {
       props: {
-        category: jsonify(postCategory),
+        category: jsonify(category),
         categories: jsonify(categories)
       }
     }

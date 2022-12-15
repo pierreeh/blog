@@ -29,8 +29,8 @@ const items = [
       }
       ,
       {
-        key: '/admin/posts/tags',
-        label: <Link href='/admin/posts/tags'>Tags</Link>
+        key: '/admin/posts/sub-categories',
+        label: <Link href='/admin/posts/sub-categories'>Sub categories</Link>
       }
     ]
   },

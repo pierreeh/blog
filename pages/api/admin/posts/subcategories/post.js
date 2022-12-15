@@ -18,13 +18,13 @@ export default async function(req, res) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
 
-    const tags = await prisma.postTag.findMany()
+    const tags = await prisma.subCategory.findMany()
     const duplicate = tags.find(t => t.name === name)
     if (duplicate) {
       return res.status(400).json({ message: 'This tag already exists' })
     }
 
-    const postTags = await prisma.postTag.create({
+    const subCategories = await prisma.subCategory.create({
       data: {
         name,
         slug: slugify(slug),
@@ -33,7 +33,7 @@ export default async function(req, res) {
         user_id: session.user.id
       }
     })
-    res.status(201).json(postTags)
+    res.status(201).json(subCategories)
   } catch (e) {
     return res.status(500).json({ message: new Error(e).message })
   }

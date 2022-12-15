@@ -154,7 +154,7 @@ export default function PostsCategories({ categories }) {
 
         <Col span={8}>
           <PageSection isSticky>
-            <Typography.Title level={5}>New Category</Typography.Title>
+            <Typography.Title level={5}>New category</Typography.Title>
 
             {error.type && 
               <Alert 
@@ -258,7 +258,7 @@ PostsCategories.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps() {
   try {
-    const postsCategories = await prisma.postCategory.findMany({
+    const postsCategories = await prisma.category.findMany({
       where: { visible: true },
       orderBy: { created_at: 'desc' },
       include: {
