@@ -48,6 +48,7 @@ model User {
   sessions      Session[]
   PostCategory  PostCategory[]
   PostTag       PostTag[]
+  Post          Post[]
 }
 
 model VerificationToken {
@@ -69,19 +70,55 @@ model PostCategory {
   user_id     String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+  color       String
 
-  user User @relation(fields: [user_id], references: [id])
+  user    User      @relation(fields: [user_id], references: [id])
+  Post    Post[]
+  PostTag PostTag[]
 }
 
 model PostTag {
-  id         String   @id @default(cuid())
-  name       String   @unique
-  slug       String   @unique
-  published  Boolean  @default(true) @db.Boolean
-  visible    Boolean  @default(true) @db.Boolean
-  user_id    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  published   Boolean  @default(true) @db.Boolean
+  visible     Boolean  @default(true) @db.Boolean
+  user_id     String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  category_id String
 
-  user User @relation(fields: [user_id], references: [id])
+  user     User         @relation(fields: [user_id], references: [id])
+  category PostCategory @relation(fields: [category_id], references: [id])
+  TagsPost TagsPost[]
+}
+
+model Post {
+  id               String   @id @default(cuid())
+  title            String
+  slug             String
+  featured_image   String?
+  excerpt          String   @db.Text
+  body             Json
+  publish_time     DateTime @default(now()) @db.Date
+  comments_allowed Boolean  @default(true) @db.Boolean
+  published        Boolean  @default(true) @db.Boolean
+  visible          Boolean  @default(true) @db.Boolean
+  user_id          String
+  category_id      String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  user     User         @relation(fields: [user_id], references: [id])
+  category PostCategory @relation(fields: [category_id], references: [id])
+  TagsPost TagsPost[]
+}
+
+model TagsPost {
+  id      String @id @default(cuid())
+  post_id String
+  tag_id  String
+
+  post Post    @relation(fields: [post_id], references: [id])
+  tag  PostTag @relation(fields: [tag_id], references: [id])
 }

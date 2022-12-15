@@ -13,8 +13,8 @@ export default async function post(req, res) {
       return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    const { name, slug, description, published } = req.body
-    if (!name || !name.replace(/\s/g, '').length || !slug || !slug.replace(/\s/g, '').length) {
+    const { name, slug, description, color, published } = req.body
+    if (!name || !name.replace(/\s/g, '').length || !slug || !slug.replace(/\s/g, '').length || !color) {
       return res.status(400).json({ message: 'Invalid fields' })
     }
     
@@ -29,6 +29,7 @@ export default async function post(req, res) {
         name,
         slug: slugify(slug),
         description,
+        color,
         published,
         user_id: session.user.id
       }

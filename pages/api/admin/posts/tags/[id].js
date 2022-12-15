@@ -13,15 +13,9 @@ export default async function patch(req, res) {
       return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    const { name, published } = req.body
-    if (!name || !name.replace(/\s/g, '').length) {
+    const { name, published, categoryId } = req.body
+    if (!name || !name.replace(/\s/g, '').length || !categoryId) {
       return res.status(400).json({ message: 'Invalid fields' })
-    }
-
-    const tags = await prisma.postTag.findMany({ select: { name: true } })
-    const duplicate = tags.find(t => t.name === name)
-    if (duplicate) {
-      return res.status(400).json({ message: 'This tag already exists' })
     }
 
     const patchTag = await prisma.postTag.update({
@@ -29,6 +23,7 @@ export default async function patch(req, res) {
       data: {
         name,
         published,
+        category_id: categoryId,
         updated_at: dateFormated,
         user_id: session.user.id
       }

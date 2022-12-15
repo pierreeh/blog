@@ -21,7 +21,7 @@ const items = [
       },
       {
         key: '/admin/posts/create',
-        label: <Link href='/admin/posts/create'>Add new</Link>
+        label: <Link href='/admin/posts/create'>New post</Link>
       },
       {
         key: '/admin/posts/categories',

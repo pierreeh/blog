@@ -13,21 +13,16 @@ export default async function patch(req, res) {
       return res.status(405).json({ message: 'Method not allowed'})
     }
 
-    const { name, description, published } = req.body
-    if (!name || !name.replace(/\s/g, '').length) {
+    const { name, color, description, published } = req.body
+    if (!name || !name.replace(/\s/g, '').length || !color) {
       return res.status(400).json({ message: 'Invalid fields' })
-    }
-
-    const categories = await prisma.postCategory.findMany({ select: { name: true } })
-    const duplicate = categories.find(c => c.name === name)
-    if (duplicate) {
-      return res.status(400).json({ message: 'This category already exists' })
     }
 
     const patchCategory = await prisma.postCategory.update({
       where: { id: req.query.id },
       data: {
         name,
+        color,
         description,
         published,
         user_id: session.user.id,
