@@ -25,6 +25,7 @@ export default function CreatePost({ categories, subCategories }) {
   const [published, setPublished] = useState(true)
   const [commentsAllowed, setComments] = useState(true)
   const [publishTime, setPublishTime] = useState()
+  const [findSubCategories, setFindSubCategories] = useState()
   const [body, updateBody] = useState(document)
   const nameValue = Form.useWatch('title', form)
   
@@ -35,7 +36,7 @@ export default function CreatePost({ categories, subCategories }) {
 
     return () => form.setFieldsValue({ slug: '' })
   }, [nameValue, form])
-
+  
   async function onSubmit(data) {
     try {
       const body = JSON.stringify({
@@ -176,28 +177,30 @@ export default function CreatePost({ categories, subCategories }) {
                   }
                 ]}
               >
-                <Select placeholder='Select'>
+                <Select placeholder='Select' onChange={e => setFindSubCategories(e)}>
                   {categories.map(c => (
                     <Select.Option key={c.id} value={c.id}>{c.name}</Select.Option>
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item
-                label="Sub categories"
-                name="subCategories"
-              >
-                <Select
-                  mode="multiple"
-                  placeholder="Select"
-                  style={{ width: '100%' }}
-                  options={subCategories.map(t => {
-                    return {
-                      value: t.id,
-                      label: t.name
+              {!!findSubCategories &&
+                <Form.Item
+                  label="Sub categories"
+                  name="subCategories"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'This field is required'
                     }
-                  })}
-                />
-              </Form.Item>
+                  ]}
+                >
+                  <Select placeholder="Select">
+                    {subCategories.filter(f => f.category_id === findSubCategories).map(s => (
+                      <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              }
               <div>
                 <Typography.Text type="secondary"><CalendarOutlined /> Publish immediatly or</Typography.Text>
                 <DatePicker 
@@ -248,7 +251,7 @@ export async function getServerSideProps() {
     })
     const subCategories = await prisma.subCategory.findMany({
       where: { published: true, visible: true },
-      select: { id: true, name: true }
+      select: { id: true, name: true, category_id: true }
     })
 
     return {

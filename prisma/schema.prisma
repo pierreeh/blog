@@ -88,9 +88,9 @@ model SubCategory {
   updated_at  DateTime @updatedAt
   category_id String
 
-  user          User              @relation(fields: [user_id], references: [id])
-  category      Category          @relation(fields: [category_id], references: [id])
-  subCategories PostSubCategory[]
+  user     User     @relation(fields: [user_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+  Post     Post[]
 }
 
 model Post {
@@ -106,19 +106,11 @@ model Post {
   visible          Boolean  @default(true) @db.Boolean
   user_id          String
   category_id      String
+  subcategory_id   String
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  user          User              @relation(fields: [user_id], references: [id])
-  category      Category          @relation(fields: [category_id], references: [id])
-  subCategories PostSubCategory[]
-}
-
-model PostSubCategory {
-  id      String @id @default(cuid())
-  post_id String
-  tag_id  String
-
-  post        Post        @relation(fields: [post_id], references: [id])
-  subCategory SubCategory @relation(fields: [tag_id], references: [id])
+  user        User        @relation(fields: [user_id], references: [id])
+  category    Category    @relation(fields: [category_id], references: [id])
+  subCategory SubCategory @relation(fields: [subcategory_id], references: [id])
 }
