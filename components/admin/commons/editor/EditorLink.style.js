@@ -9,5 +9,4 @@ export const EditorModal = styled.div`
   padding: ${rem(8)};
   background-color: #fff;
   min-width: 40vw;
-  box-shadow: .5rem 0 1rem rgba(0,0,0,.08);
 `

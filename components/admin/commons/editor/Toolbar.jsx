@@ -20,7 +20,7 @@ export default function Toolbar({ selection }) {
   const blockType = getTextBlockStyles(editor)
   
   return (
-    <header style={{ marginBottom: '.5rem', position: 'sticky', top: 0, backgroundColor: '#fff', padding: '.5rem', zIndex: 100, boxShadow: ".5rem 0 1rem rgba(0,0,0,.08" }}>
+    <header style={{ marginBottom: '.5rem', position: 'sticky', top: 0, backgroundColor: '#fff', padding: '.5rem', zIndex: 100 }}>
       {paragraphStyles.map(p => (
         <Button 
           type={blockType === p ? "primary" : "default"}
