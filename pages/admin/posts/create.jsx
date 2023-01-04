@@ -3,10 +3,10 @@ import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import dayjs from 'dayjs'
-import { PrismaClient } from "@prisma/client"
 import { Row, Col, Typography, Form, Input, Select, Button, Switch, Alert, DatePicker, Breadcrumb, Divider } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
 
+import { db } from 'utils/db'
 import PageSection from "components/admin/commons/pageSection/PageSection"
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
 import { rem } from 'styles/ClobalStyles.style'
@@ -15,7 +15,7 @@ import slugify from 'utils/slugify'
 
 const Editor = dynamic(import('components/admin/commons/editor/Editor'), { ssr: false })
 
-const prisma = new PrismaClient()
+const prisma = db
 const document = [{ type: "p", children: [{ text: "" }] }]
 
 export default function CreatePost({ categories, subCategories }) {

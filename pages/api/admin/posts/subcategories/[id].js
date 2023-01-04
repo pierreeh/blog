@@ -1,9 +1,9 @@
 import { getSession } from "next-auth/react"
-import { PrismaClient } from "@prisma/client"
 
+import { db } from "utils/db"
 import { dateFormated } from "utils/utils"
 
-const prisma = new PrismaClient()
+const prisma = db
 
 export default async function patch(req, res) {
   try {

@@ -49,6 +49,7 @@ model User {
   categories    Category[]
   subCategories SubCategory[]
   Post          Post[]
+  Tag           Tag[]
 }
 
 model VerificationToken {
@@ -113,4 +114,17 @@ model Post {
   user        User        @relation(fields: [user_id], references: [id])
   category    Category    @relation(fields: [category_id], references: [id])
   subCategory SubCategory @relation(fields: [subcategory_id], references: [id])
+}
+
+model Tag {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  slug       String   @unique
+  published  Boolean  @default(true) @db.Boolean
+  visible    Boolean  @default(true) @db.Boolean
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id])
 }

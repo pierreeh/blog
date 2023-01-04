@@ -1,16 +1,16 @@
 import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
-import { PrismaClient } from "@prisma/client"
 import { Colorpicker } from 'antd-colorpicker'
 import { Breadcrumb, Row, Col, Typography, Form, Input, Button, Switch, Alert } from "antd"
 
+import { db } from "utils/db"
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
 import PageSection from "components/admin/commons/pageSection/PageSection"
 import { jsonify } from "utils/utils"
 import { rem } from "styles/ClobalStyles.style"
 
-const prisma = new PrismaClient()
+const prisma = db
 
 export default function EditCategory({ category, categories }) {
   const router = useRouter()

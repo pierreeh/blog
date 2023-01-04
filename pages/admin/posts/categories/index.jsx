@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { PrismaClient } from "@prisma/client"
 import dayjs from 'dayjs'
 import { Colorpicker } from 'antd-colorpicker'
 import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb, Badge } from 'antd'
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
+import { db } from 'utils/db'
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
 import PageSection from "components/admin/commons/pageSection/PageSection"
 import slugify from 'utils/slugify'
 import { rem } from 'styles/ClobalStyles.style'
 import { jsonify } from 'utils/utils'
 
-const prisma = new PrismaClient()
+const prisma = db
 const pageSize = 24
 
 export default function PostsCategories({ categories }) {

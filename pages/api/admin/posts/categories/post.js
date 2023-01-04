@@ -1,9 +1,9 @@
 import { getSession } from "next-auth/react"
-import { PrismaClient } from "@prisma/client"
 
+import { db } from "utils/db"
 import slugify from "utils/slugify"
 
-const prisma = new PrismaClient()
+const prisma = db
 
 export default async function post(req, res) {
   try {
