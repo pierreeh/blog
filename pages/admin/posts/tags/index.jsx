@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { Row, Col, Typography, Breadcrumb, Form, Alert, Input, Switch, Button } from 'antd'
+import dayjs from 'dayjs'
+import { Row, Col, Typography, Breadcrumb, Form, Alert, Input, Switch, Button, List, Pagination, Modal } from 'antd'
+import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 
 import { db } from 'utils/db'
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
@@ -11,6 +13,7 @@ import { rem } from 'styles/ClobalStyles.style'
 import { jsonify } from 'utils/utils'
 
 const prisma = db
+const pageSize = 24
 
 export default function PostsTags({ tags }) {
   const router = useRouter()
@@ -18,6 +21,10 @@ export default function PostsTags({ tags }) {
   const [error, setError] = useState({ type: '', message: '' })
   const [published, setPublished] = useState(true)
   const nameValue = Form.useWatch('name', form)
+  const [pages, setPages] = useState({ current: 1, minIndex: 0, maxIndex: pageSize })
+  const [searchValue, setSearchValue] = useState('')
+  const [datas, setDatas] = useState(tags)
+  const { confirm } = Modal
 
   useEffect(() => {
     if (nameValue) {
@@ -26,6 +33,12 @@ export default function PostsTags({ tags }) {
 
     return () => form.setFieldsValue({ slug: '' })
   }, [nameValue, form])
+
+  useEffect(() => {
+    setDatas(tags.filter(c => c.name.toLocaleLowerCase().includes(searchValue.toLocaleLowerCase())))
+
+    return () => setDatas(tags)
+  }, [searchValue, tags])
 
   async function onSubmit(data) {
     try {
@@ -62,6 +75,23 @@ export default function PostsTags({ tags }) {
     }
   }
 
+  async function deleteTag(id, name) {
+    try {
+      confirm({
+        title: `Delete ${name}?`,
+        icon: <ExclamationCircleOutlined />,
+        async onOk() {
+          const res = await(await fetch(`/api/admin/posts/tags/hide/${id}`, { method: 'PATCH' })).json()
+          router.reload()
+          return res
+        },
+        onCancel() {}
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   return (
     <>
       <Breadcrumb style={{ marginBottom: '1rem' }}>
@@ -72,7 +102,50 @@ export default function PostsTags({ tags }) {
       <Row gutter={24}>
         <Col span={16}>
           <PageSection>
-            <Typography.Title level={5}>Tags</Typography.Title>
+            <Typography.Title level={5}>{datas.length} Tag{datas.length > 1 ? 's' : ''}</Typography.Title>
+
+            <List 
+              header={datas.length > pageSize && <Input placeholder="Find a sub category" allowClear onChange={e => setSearchValue(e.target.value)} />}
+              footer={
+                datas.length > pageSize && 
+                <Row justify='center'>
+                  <Pagination 
+                    size='small'
+                    pageSize={pageSize}
+                    onChange={page => setPages({ current: page, minIndex: (page - 1) * pageSize, maxIndex: page * pageSize })}
+                    current={pages.current}
+                    total={datas.length}
+                  />
+                </Row>
+              }
+              bordered
+              dataSource={datas}
+              renderItem={(tag, i) => {
+                return (
+                  i >= pages.minIndex && i < pages.maxIndex &&
+                  <List.Item
+                    actions={[
+                      <Button key={tag.id} onClick={() => deleteTag(tag.id, tag.name)} type='text' htmlType='button'><DeleteOutlined /></Button>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      title={<Link href={`/admin/posts/tags/${tag.id}`}>{tag.name}</Link>}
+                      description={
+                        <Typography.Text type='secondary'>
+                          {!!tag.published 
+                            ? <EyeOutlined style={{ marginRight: '.5rem' }} /> 
+                            : <EyeInvisibleOutlined style={{ marginRight: '.5rem' }} />} 
+                            {`${tag.updated_at > tag.created_at 
+                            ? `Updated ${dayjs(tag.updated_at).format('ddd MMMM YYYY[,] hh[:] mm a')}` 
+                            : `Created ${dayjs(tag.created_at).format('ddd MMMM YYYY[,] hh[:] mm a')}`} by ${tag.user.name}`
+                          }
+                        </Typography.Text>
+                      }
+                    />
+                  </List.Item>
+                )
+              }}
+            />
           </PageSection>
         </Col>
 
@@ -96,7 +169,7 @@ export default function PostsTags({ tags }) {
 
             <Form 
               autoComplete='off'
-              name='createSubCategories'
+              name='createTag'
               layout='vertical'
               onFinish={onSubmit}
               form={form}
