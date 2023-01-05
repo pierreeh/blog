@@ -13,9 +13,15 @@ export default async function patch(req, res) {
       return res.status(405).json({ message: 'Method not allowed'})
     }
 
-    const { name, color, description, published } = req.body
+    const { name, color, description, published, filename, filetype } = req.body
     if (!name || !name.replace(/\s/g, '').length || !color) {
       return res.status(400).json({ message: 'Invalid fields' })
+    }
+
+    if (!!filename) {
+      if (filetype !== "image/jpeg" && filetype !== "image/jpg" && filetype !== "image/png") {
+        return res.status(400).json({ message: 'The image must be .jpeg, .jpg or .png' })
+      }
     }
 
     const patchCategory = await prisma.category.update({
@@ -26,7 +32,8 @@ export default async function patch(req, res) {
         description,
         published,
         user_id: session.user.id,
-        updated_at: dateFormated
+        updated_at: dateFormated,
+        featuredImage: filename
       }
     })
     res.status(200).json(patchCategory)

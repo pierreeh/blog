@@ -2,28 +2,70 @@ import { useState } from "react"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import { Colorpicker } from 'antd-colorpicker'
-import { Breadcrumb, Row, Col, Typography, Form, Input, Button, Switch, Alert } from "antd"
+import ImgCrop from 'antd-img-crop'
+import { Breadcrumb, Row, Col, Typography, Form, Input, Button, Switch, Alert, Upload } from "antd"
+import { UploadOutlined } from '@ant-design/icons'
 
 import { db } from "utils/db"
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
 import PageSection from "components/admin/commons/pageSection/PageSection"
 import { jsonify } from "utils/utils"
+import slugify from "utils/slugify"
 import { rem } from "styles/ClobalStyles.style"
 
 const prisma = db
 
-export default function EditCategory({ category, categories }) {
+export default function EditCategory({ category }) {
   const router = useRouter()
   const [form] = Form.useForm()
   const [published, setPublished] = useState(category.published)
   const [error, setError] = useState({ type: '', message: '' })
+  const [fileName, setFileName] = useState(null)
 
   async function onSubmit(data) {
     try {
+      let featuredImage = category.featuredImage[0]?.name
+      let featuredImageType = category.featuredImage[0]?.type
+
+      if (!featuredImage && !!fileName?.file?.name) {
+        featuredImage = encodeURIComponent(fileName?.file?.name)
+      }
+
+      if (fileName?.file?.status === "removed") {
+        featuredImage = null
+        featuredImageType = null
+        const filename = encodeURIComponent(fileName?.file?.name)
+        const key = `categories/${slugify(category.slug)}/${filename}`
+        await fetch(`/api/admin/medias/delete?key=${key}`, { method: 'DELETE' })
+      }
+
+      if (!!fileName?.file?.name && fileName?.file?.name !== category.featuredImage[0]?.name) {
+        const filename = encodeURIComponent(fileName?.file?.name)
+        const fileType = fileName?.file?.type
+        const key = `categories/${slugify(category.slug)}/${filename}`
+        await fetch(`/api/admin/medias/delete?key=${`categories/${slugify(category.slug)}/${category.featuredImage[0]?.name}`}`, { method: 'DELETE' })
+
+        featuredImage = filename
+        featuredImageType = fileType
+
+        const files = await fetch(`/api/admin/medias/upload?key=${key}&fileType=${fileType}`)
+        const { url, fields } = await files.json()
+        const formData = new FormData()
+
+        const file = fileName?.file?.originFileObj
+        Object.entries({ ...fields, file }).forEach(([key, value]) => formData.append(key, value))
+        await fetch(url, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
       const body = JSON.stringify({
         name: data.name,
         color: data.color,
         description: data.description,
+        filename: featuredImage, 
+        filetype: featuredImageType,
         published
       })
 
@@ -46,6 +88,10 @@ export default function EditCategory({ category, categories }) {
     } catch (e) {
       console.error(e)
     }
+  }
+
+  function dummyRequest({ onSuccess }) {
+    setTimeout(() => { onSuccess("ok") }, 0)
   }
 
   return (
@@ -133,6 +179,19 @@ export default function EditCategory({ category, categories }) {
                 >
                   <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
                 </Form.Item>
+                <ImgCrop grid aspect={16/9}>
+                <Upload
+                  maxCount={1}
+                  listType="picture"
+                  customRequest={dummyRequest}
+                  onChange={e => setFileName(e)}
+                  defaultFileList={!!category.featuredImage && [...category.featuredImage]}
+                  accept="image/jpg, image/jpeg, image/png"
+                >
+                  <Button icon={<UploadOutlined />}>Featured Image</Button>
+                </Upload>
+              </ImgCrop>
+
                 <Row style={{ marginTop: rem(20), marginBottom: rem(20) }}>
                   <Col span={2}>
                     <Form.Item valuePropName="checked" name="published" noStyle>
@@ -163,13 +222,20 @@ EditCategory.getLayout = page => <AdminLayout>{page}</AdminLayout>
 
 export async function getServerSideProps(context) {
   try {
-    const category = await prisma.category.findFirst({ where: { id: context.query.id } })
-    const categories = await prisma.category.findMany({ select: { name: true } })
+    const patchCategory = await prisma.category.findFirst({ where: { id: context.query.id } })
+    const category = {
+      ...patchCategory,
+      featuredImage: !!patchCategory.featuredImage && [{
+        uid: '0',
+        type: `image/${patchCategory.featuredImage.split('.').slice(1).join('.')}`,
+        name: patchCategory.featuredImage,
+        thumbUrl: `${process.env.S3_BUCKET_URL}/categories/${patchCategory.slug}/${patchCategory.featuredImage}`
+      }]
+    }
 
     return {
       props: {
         category: jsonify(category),
-        categories: jsonify(categories)
       }
     }
   } catch (e) {
