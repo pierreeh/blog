@@ -61,17 +61,17 @@ model VerificationToken {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?  @db.Text
-  image       String?
-  published   Boolean  @default(true) @db.Boolean
-  visible     Boolean  @default(true) @db.Boolean
-  user_id     String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  color       String
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  description   String?  @db.Text
+  featuredImage String?
+  published     Boolean  @default(true) @db.Boolean
+  visible       Boolean  @default(true) @db.Boolean
+  user_id       String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  color         String
 
   user          User          @relation(fields: [user_id], references: [id])
   post          Post[]

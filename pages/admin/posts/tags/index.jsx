@@ -185,10 +185,6 @@ export default function PostsTags({ tags }) {
                   {
                     pattern: /.*[^ ].*/,
                     message: "This field can't be empty"
-                  },
-                  {
-                    pattern: /^\S+$/,
-                    message: "This field can't have space"
                   }
                 ]}
               >

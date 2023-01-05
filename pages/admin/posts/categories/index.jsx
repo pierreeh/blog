@@ -3,8 +3,9 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import dayjs from 'dayjs'
 import { Colorpicker } from 'antd-colorpicker'
-import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb, Badge } from 'antd'
-import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import ImgCrop from 'antd-img-crop'
+import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb, Badge, Upload } from 'antd'
+import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
 import { db } from 'utils/db'
 import AdminLayout from "components/admin/adminLayout/AdminLayout"
@@ -24,6 +25,7 @@ export default function PostsCategories({ categories }) {
   const [pages, setPages] = useState({ current: 1, minIndex: 0, maxIndex: pageSize })
   const [searchValue, setSearchValue] = useState('')
   const [datas, setDatas] = useState(categories)
+  const [fileName, setFileName] = useState(null)
   const nameValue = Form.useWatch('name', form)
   const { confirm } = Modal
 
@@ -49,11 +51,34 @@ export default function PostsCategories({ categories }) {
         return false
       }
 
+      if (!!fileName && fileName?.file?.status !== "removed") {
+        if (fileName?.file?.type !== 'image/jpeg' && fileName?.file?.type !== 'image/jpg' && fileName?.file?.type !== 'image/png') {
+          setError({ type: 'error', message: 'The image must be .jpeg, .jpg or .png' })
+          return false
+        }
+
+        const filename = encodeURIComponent(fileName?.file?.name)
+        const fileType = fileName?.file?.type
+        const key = `categories/${slugify(data.slug)}/${Date.now()}-${filename}`
+        const files = await fetch(`/api/admin/medias/upload?key=${key}&fileType=${fileType}`)
+        const { url, fields } = await files.json()
+        const formData = new FormData()
+
+        const file = fileName?.file?.originFileObj
+        Object.entries({ ...fields, file }).forEach(([key, value]) => formData.append(key, value))
+        await fetch(url, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
       const body = JSON.stringify({
         name: data.name,
         slug: slugify(data.slug),
         description: data.description,
         color: data.color,
+        filename: !fileName?.file?.name || fileName?.file?.status === "removed" ? null : `categories/${slugify(data.slug)}/${Date.now()}-${encodeURIComponent(fileName?.file?.name)}`, 
+        filetype: !fileName?.file?.status || fileName?.file?.status === "removed" ? null : fileName?.file?.type,
         published
       })
 
@@ -93,6 +118,10 @@ export default function PostsCategories({ categories }) {
     } catch (e) {
       console.error(e)
     }
+  }
+
+  function dummyRequest({ onSuccess }) {
+    setTimeout(() => { onSuccess("ok") }, 0)
   }
 
   return (
@@ -231,6 +260,18 @@ export default function PostsCategories({ categories }) {
               >
                 <Input.TextArea autoSize={{ minRows: 2, maxRows: 6 }} />
               </Form.Item>
+              <ImgCrop grid aspect={16/9}>
+                <Upload
+                  maxCount={1}
+                  listType="picture"
+                  customRequest={dummyRequest}
+                  onChange={e => setFileName(e)}
+                  accept="image/jpg, image/jpeg, image/png"
+                >
+                  <Button icon={<UploadOutlined />}>Featured Image</Button>
+                </Upload>
+              </ImgCrop>
+
               <Row style={{ marginTop: rem(20), marginBottom: rem(20) }}>
                 <Col span={3}>
                   <Switch defaultChecked onChange={e => setPublished(e)} />

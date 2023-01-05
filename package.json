@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "1.0.5",
-    "@prisma/client": "4.7.1",
+    "@prisma/client": "4.8.0",
     "antd": "5.0.4",
     "antd-colorpicker": "1.0.0",
+    "antd-img-crop": "4.2.4",
+    "aws-sdk": "2.1288.0",
     "dayjs": "1.11.7",
     "deep-equal": "2.1.0",
     "is-hotkey": "0.2.0",
@@ -27,6 +29,6 @@
   "devDependencies": {
     "eslint": "8.29.0",
     "eslint-config-next": "13.0.6",
-    "prisma": "4.7.1"
+    "prisma": "4.8.0"
   }
 }

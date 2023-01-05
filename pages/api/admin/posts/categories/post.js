@@ -13,9 +13,15 @@ export default async function post(req, res) {
       return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    const { name, slug, description, color, published } = req.body
+    const { name, slug, description, color, published, filename, filetype } = req.body
     if (!name || !name.replace(/\s/g, '').length || !slug || !slug.replace(/\s/g, '').length || !color) {
       return res.status(400).json({ message: 'Invalid fields' })
+    }
+    
+    if (!!filename) {
+      if (filetype !== "image/jpeg" && filetype !== "image/jpg" && filetype !== "image/png") {
+        return res.status(400).json({ message: 'The image must be .jpeg, .jpg or .png' })
+      }
     }
     
     const categories = await prisma.category.findMany()
@@ -31,7 +37,8 @@ export default async function post(req, res) {
         description,
         color,
         published,
-        user_id: session.user.id
+        user_id: session.user.id,
+        featuredImage: filename
       }
     })
     res.status(201).json(category)
