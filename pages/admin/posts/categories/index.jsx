@@ -4,7 +4,7 @@ import { useRouter } from 'next/router'
 import dayjs from 'dayjs'
 import { Colorpicker } from 'antd-colorpicker'
 import ImgCrop from 'antd-img-crop'
-import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb, Badge, Upload } from 'antd'
+import { Row, Col, Typography, Form, Input, Button, Switch, Alert, List, Pagination, Modal, Breadcrumb, Badge, Upload, Avatar } from 'antd'
 import { DeleteOutlined, EyeOutlined, EyeInvisibleOutlined, ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
 import { db } from 'utils/db'
@@ -59,7 +59,7 @@ export default function PostsCategories({ categories }) {
 
         const filename = encodeURIComponent(fileName?.file?.name)
         const fileType = fileName?.file?.type
-        const key = `categories/${slugify(data.slug)}/${Date.now()}-${filename}`
+        const key = `categories/${slugify(data.slug)}/${filename}`
         const files = await fetch(`/api/admin/medias/upload?key=${key}&fileType=${fileType}`)
         const { url, fields } = await files.json()
         const formData = new FormData()
@@ -77,7 +77,7 @@ export default function PostsCategories({ categories }) {
         slug: slugify(data.slug),
         description: data.description,
         color: data.color,
-        filename: !fileName?.file?.name || fileName?.file?.status === "removed" ? null : `categories/${slugify(data.slug)}/${Date.now()}-${encodeURIComponent(fileName?.file?.name)}`, 
+        filename: !fileName?.file?.name || fileName?.file?.status === "removed" ? null : encodeURIComponent(fileName?.file?.name), 
         filetype: !fileName?.file?.status || fileName?.file?.status === "removed" ? null : fileName?.file?.type,
         published
       })
@@ -162,6 +162,7 @@ export default function PostsCategories({ categories }) {
                   >
                     <List.Item.Meta
                       title={<><Badge color={cat.color} /> <Link href={`/admin/posts/categories/${cat.id}`}>{cat.name}</Link></>}
+                      avatar={!!cat.featuredImage && <Avatar src={cat.featuredImage} />}
                       description={
                         <Typography.Text type='secondary'>
                           {!!cat.published 
@@ -311,9 +312,16 @@ export async function getServerSideProps() {
       }
     })
 
+    const categories = postsCategories.map(c => {
+      return {
+        ...c,
+        featuredImage: !!c.featuredImage && `${process.env.S3_BUCKET_URL}/categories/${c.slug}/${c.featuredImage}`
+      }
+    })
+
     return {
       props: {
-        categories: jsonify(postsCategories)
+        categories: jsonify(categories)
       }
     }
   } catch (e) {
