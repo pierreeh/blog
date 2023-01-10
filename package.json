@@ -16,14 +16,16 @@
     "antd-img-crop": "4.2.4",
     "aws-sdk": "2.1288.0",
     "dayjs": "1.11.7",
-    "deep-equal": "2.1.0",
+    "deep-equal": "2.2.0",
+    "escape-html": "1.0.3",
     "is-hotkey": "0.2.0",
     "next": "13.0.6",
     "next-auth": "4.18.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "slate": "0.87.0",
-    "slate-react": "0.87.1",
+    "slate-history": "0.86.0",
+    "slate-react": "0.88.0",
     "styled-components": "5.3.6"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import dayjs from 'dayjs'
 import { Row, Col, Typography, Form, Input, Select, Button, Switch, Alert, DatePicker, Breadcrumb, Divider } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
@@ -13,20 +13,19 @@ import { rem } from 'styles/ClobalStyles.style'
 import { jsonify } from 'utils/utils'
 import slugify from 'utils/slugify'
 
-const Editor = dynamic(import('components/admin/commons/editor/Editor'), { ssr: false })
-
+const TextEditor = dynamic(import('components/admin/commons/textEditor/TextEditor'), { ssr: false })
 const prisma = db
 const document = [{ type: "p", children: [{ text: "" }] }]
 
-export default function CreatePost({ categories, subCategories }) {
+export default function CreatePost({ categories, subCategories, tags }) {
   const [form] = Form.useForm()
   const router = useRouter()
+  const [body, updateBody] = useState(document)
   const [error, setError] = useState({ type: '', message: '' })
   const [published, setPublished] = useState(true)
   const [commentsAllowed, setComments] = useState(true)
   const [publishTime, setPublishTime] = useState()
   const [findSubCategories, setFindSubCategories] = useState()
-  const [body, updateBody] = useState(document)
   const nameValue = Form.useWatch('title', form)
   
   useEffect(() => {
@@ -82,6 +81,7 @@ export default function CreatePost({ categories, subCategories }) {
         <Breadcrumb.Item><Link href="/admin">Admin</Link></Breadcrumb.Item>
         <Breadcrumb.Item>New post</Breadcrumb.Item>
       </Breadcrumb>
+      
       <Form 
         autoComplete='off'
         name='createPost'
@@ -145,7 +145,7 @@ export default function CreatePost({ categories, subCategories }) {
               </Form.Item>
 
               <Divider />
-              <Editor body={body} onChange={updateBody} />
+              <TextEditor body={body} onChange={updateBody} />
             </PageSection>
           </Col>
 
@@ -201,10 +201,22 @@ export default function CreatePost({ categories, subCategories }) {
                   </Select>
                 </Form.Item>
               }
+              <Form.Item
+                label="Tags"
+                name="tags"
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select"
+                  style={{ width: '100%' }}
+                  options={tags}
+                />
+              </Form.Item>
               <div>
                 <Typography.Text type="secondary"><CalendarOutlined /> Publish immediatly or</Typography.Text>
                 <DatePicker 
-                  style={{ marginLeft: '.5rem' }} 
+                  style={{ marginLeft: '.5rem' }}
+                  placeholder="Select a date"
                   showTime
                   disabledDate={disableDate}
                   onChange={(value, dateString) => setPublishTime(dateString)}
@@ -253,11 +265,23 @@ export async function getServerSideProps() {
       where: { published: true, visible: true },
       select: { id: true, name: true, category_id: true }
     })
+    const tags = await prisma.tag.findMany({
+      where: { published: true, visible: true },
+      select: { id: true, name: true }
+    })
+
+    const formatedTags = tags.map(t => {
+      return {
+        value: t.id,
+        label: t.name
+      }
+    })
 
     return {
       props: {
         categories: jsonify(categories),
-        subCategories: jsonify(subCategories)
+        subCategories: jsonify(subCategories),
+        tags: jsonify(formatedTags)
       }
     }
   } catch (e) {
