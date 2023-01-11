@@ -1,9 +1,16 @@
 import Layout from "components/layout/Layout"
+import { withGlobalData } from "hoc/withGlobalData"
 
-export default function Home() {
+export default function Home({ categories }) {
   return (
-    <div>Home</div>
+    <Layout categories={categories}>Home</Layout>
   )
 }
 
-Home.getLayout = page => <Layout>{page}</Layout>
+export const getStaticProps = withGlobalData(async () => {
+  return {
+    props: {
+      test: 'test'
+    }
+  }
+})

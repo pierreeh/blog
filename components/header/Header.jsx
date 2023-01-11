@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { signOut, useSession } from 'next-auth/react'
 
-export default function Header() {
+export default function Header({ categories }) {
   const { data: session } = useSession()
 
   function UserSession() {
@@ -26,8 +26,13 @@ export default function Header() {
 
   return (
     <header>
-      Header
       <UserSession />
+
+      <nav>
+        {categories.map(c => (
+          <Link key={c.id} href={`/${c.slug}`}>{c.name}</Link>
+        ))}
+      </nav>
     </header>
   )
 }

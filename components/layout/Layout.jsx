@@ -1,9 +1,9 @@
 import Header from "components/header/Header"
 
-export default function Layout({ children }) {
+export default function Layout({ children, categories }) {
   return (
     <>
-      <Header />
+      <Header categories={categories} />
       <main>{children}</main>
     </>
   )
