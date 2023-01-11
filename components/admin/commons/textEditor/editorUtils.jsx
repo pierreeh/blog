@@ -1,9 +1,9 @@
 import { Editor, Transforms, Text, Range, Element } from 'slate'
 import { ReactEditor } from 'slate-react'
 import escapeHtml from 'escape-html'
-import { Typography } from 'antd'
 
 import Link from './blocks/link/Link'
+import Images from './blocks/images/Images'
 
 export const hotKeys = {
   'mod+b': 'bold',
@@ -75,6 +75,8 @@ export function RenderElement(props) {
       return <blockquote {...attributes}>{children}</blockquote>
     case 'link':
       return <Link {...props} />
+    case 'image':
+      return <Images {...props} />
     default:
       return <p {...attributes}>{children}</p>
   }
@@ -168,4 +170,13 @@ export function insertLink(editor, url, format) {
   } else {
     Transforms.insertNodes(editor, createParagraphNode([link]))
   }
-};
+}
+
+export function isUrl(string) {
+  try {
+   let url = new URL(string)
+   return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch (_) {
+    return false
+  }
+}

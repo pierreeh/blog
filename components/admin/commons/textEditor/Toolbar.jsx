@@ -1,8 +1,8 @@
 import { useSlate } from 'slate-react'
 import { Divider, Button } from 'antd'
-import { AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined } from '@ant-design/icons'
+import { AlignLeftOutlined, AlignCenterOutlined, AlignRightOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, PictureOutlined } from '@ant-design/icons'
 
-import { isBlockActive, isLinkActive, isMarkActive, toggleBlock, toggleMark, insertLink } from './editorUtils'
+import { isBlockActive, isLinkActive, isMarkActive, toggleBlock, toggleMark, insertLink, isUrl } from './editorUtils'
 
 function BlockButton({ format, icon, style }) {
   const editor = useSlate()
@@ -52,6 +52,10 @@ function LinkButton({ format, icon, style }) {
         onMouseDown={e => {
           e.preventDefault()
           const url = prompt("Enter a URL")
+          if (url && !isUrl(url)) {
+            alert('Please insert a valid link')
+            return
+          }
           insertLink(editor, url, format)
         }}
       >

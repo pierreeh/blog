@@ -3,8 +3,9 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import dayjs from 'dayjs'
-import { Row, Col, Typography, Form, Input, Select, Button, Switch, Alert, DatePicker, Breadcrumb, Divider } from 'antd'
-import { CalendarOutlined } from '@ant-design/icons'
+import ImgCrop from 'antd-img-crop'
+import { Row, Col, Typography, Form, Input, Select, Button, Switch, Alert, DatePicker, Breadcrumb, Divider, Upload } from 'antd'
+import { CalendarOutlined, UploadOutlined } from '@ant-design/icons'
 
 import { db } from 'utils/db'
 import PageSection from "components/admin/commons/pageSection/PageSection"
@@ -20,12 +21,13 @@ const document = [{ type: "p", children: [{ text: "" }] }]
 export default function CreatePost({ categories, subCategories, tags }) {
   const [form] = Form.useForm()
   const router = useRouter()
-  const [body, updateBody] = useState(document)
+  const [postBody, updatePostBody] = useState(document)
   const [error, setError] = useState({ type: '', message: '' })
   const [published, setPublished] = useState(true)
   const [commentsAllowed, setComments] = useState(true)
   const [publishTime, setPublishTime] = useState()
   const [findSubCategories, setFindSubCategories] = useState()
+  const [fileName, setFileName] = useState(null)
   const nameValue = Form.useWatch('title', form)
   
   useEffect(() => {
@@ -38,15 +40,39 @@ export default function CreatePost({ categories, subCategories, tags }) {
   
   async function onSubmit(data) {
     try {
+      if (!!fileName && fileName?.file?.status !== "removed") {
+        if (fileName?.file?.type !== 'image/jpeg' && fileName?.file?.type !== 'image/jpg' && fileName?.file?.type !== 'image/png') {
+          setError({ type: 'error', message: 'The image must be .jpeg, .jpg or .png' })
+          return false
+        }
+
+        const filename = encodeURIComponent(fileName?.file?.name)
+        const fileType = fileName?.file?.type
+        const key = `posts/${slugify(data.slug)}/${filename}`
+        const files = await fetch(`/api/admin/medias/upload?key=${key}&fileType=${fileType}`)
+        const { url, fields } = await files.json()
+        const formData = new FormData()
+
+        const file = fileName?.file?.originFileObj
+        Object.entries({ ...fields, file }).forEach(([key, value]) => formData.append(key, value))
+        await fetch(url, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+
       const body = JSON.stringify({
         title: data.title,
         slug: slugify(data.slug),
         excerpt: data.excerpt,
-        body: data.body,
+        postBody,
         categoryId: data.categoryId,
         subCategories: data.subCategories,
-        commentsAllowed,
+        tags: data.tags,
+        filename: !fileName?.file?.name || fileName?.file?.status === "removed" ? null : encodeURIComponent(fileName?.file?.name), 
+        filetype: !fileName?.file?.status || fileName?.file?.status === "removed" ? null : fileName?.file?.type,
         publishTime,
+        commentsAllowed,
         published
       })
 
@@ -73,6 +99,10 @@ export default function CreatePost({ categories, subCategories, tags }) {
 
   function disableDate(current) {
     return current && current < dayjs().endOf('day')
+  }
+
+  function dummyRequest({ onSuccess }) {
+    setTimeout(() => { onSuccess("ok") }, 0)
   }
 
   return (
@@ -145,7 +175,7 @@ export default function CreatePost({ categories, subCategories, tags }) {
               </Form.Item>
 
               <Divider />
-              <TextEditor body={body} onChange={updateBody} />
+              <TextEditor body={postBody} onChange={updatePostBody} />
             </PageSection>
           </Col>
 
@@ -194,7 +224,7 @@ export default function CreatePost({ categories, subCategories, tags }) {
                     }
                   ]}
                 >
-                  <Select placeholder="Select">
+                  <Select placeholder="Select" mode="multiple">
                     {subCategories.filter(f => f.category_id === findSubCategories).map(s => (
                       <Select.Option key={s.id} value={s.id}>{s.name}</Select.Option>
                     ))}
@@ -212,6 +242,21 @@ export default function CreatePost({ categories, subCategories, tags }) {
                   options={tags}
                 />
               </Form.Item>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <ImgCrop grid aspect={16/9}>
+                  <Upload
+                    maxCount={1}
+                    listType="picture"
+                    customRequest={dummyRequest}
+                    onChange={e => setFileName(e)}
+                    accept="image/jpg, image/jpeg, image/png"
+                  >
+                    <Button icon={<UploadOutlined />}>Featured Image</Button>
+                  </Upload>
+                </ImgCrop>
+              </div>
+
               <div>
                 <Typography.Text type="secondary"><CalendarOutlined /> Publish immediatly or</Typography.Text>
                 <DatePicker 

@@ -89,9 +89,23 @@ model SubCategory {
   updated_at  DateTime @updatedAt
   category_id String
 
-  user     User     @relation(fields: [user_id], references: [id])
-  category Category @relation(fields: [category_id], references: [id])
-  Post     Post[]
+  user              User              @relation(fields: [user_id], references: [id])
+  category          Category          @relation(fields: [category_id], references: [id])
+  postSubCategories PostSubCategory[]
+}
+
+model Tag {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  slug       String   @unique
+  published  Boolean  @default(true) @db.Boolean
+  visible    Boolean  @default(true) @db.Boolean
+  user_id    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user    User      @relation(fields: [user_id], references: [id])
+  postTag PostTag[]
 }
 
 model Post {
@@ -107,24 +121,29 @@ model Post {
   visible          Boolean  @default(true) @db.Boolean
   user_id          String
   category_id      String
-  subcategory_id   String
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  user        User        @relation(fields: [user_id], references: [id])
-  category    Category    @relation(fields: [category_id], references: [id])
-  subCategory SubCategory @relation(fields: [subcategory_id], references: [id])
+  user              User              @relation(fields: [user_id], references: [id])
+  category          Category          @relation(fields: [category_id], references: [id])
+  postSubCategories PostSubCategory[]
+  postTag           PostTag[]
 }
 
-model Tag {
-  id         String   @id @default(cuid())
-  name       String   @unique
-  slug       String   @unique
-  published  Boolean  @default(true) @db.Boolean
-  visible    Boolean  @default(true) @db.Boolean
-  user_id    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+model PostSubCategory {
+  id             String @id @default(cuid())
+  post_id        String
+  subcategory_id String
 
-  user User @relation(fields: [user_id], references: [id])
+  post        Post        @relation(fields: [post_id], references: [id])
+  subcategory SubCategory @relation(fields: [subcategory_id], references: [id])
+}
+
+model PostTag {
+  id      String @id @default(cuid())
+  post_id String
+  tag_id  String
+
+  post Post @relation(fields: [post_id], references: [id])
+  tag  Tag  @relation(fields: [tag_id], references: [id])
 }

@@ -23,8 +23,6 @@ export default function Editor({ body, onChange, placeholder }) {
     }
   }, [])
 
-  console.log(body)
-
   return (
     <>
       <Slate
